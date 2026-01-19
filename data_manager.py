@@ -1,6 +1,9 @@
 import json
 import os
+import datetime
+from datetime import timedelta
 from typing import List, Dict, Any
+
 
 class DataManager:
     """Manages the reading and writing of error data to a JSON file."""
@@ -89,3 +92,40 @@ class DataManager:
         if len(new_errors) < len(errors):
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 json.dump(new_errors, f, ensure_ascii=False, indent=4)
+
+    def get_weekly_stats(self) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Returns a dictionary with dates (last 7 days) mapped to a list of session dictionaries.
+        Keys are 'YYYY-MM-DD'.
+        Values are Lists of session dicts (from progress.json).
+        """
+        progress_file = "progress.json"
+        if not os.path.exists(progress_file):
+             return {}
+        
+        try:
+            with open(progress_file, 'r', encoding='utf-8') as f:
+                history = json.load(f)
+        except json.JSONDecodeError:
+            return {}
+
+        today = datetime.date.today()
+        stats = {} 
+        
+        # Initialize last 7 days with empty list
+        for i in range(6, -1, -1):
+            d = today - timedelta(days=i)
+            stats[d.isoformat()] = []
+            
+        for entry in history:
+            ts = entry.get("timestamp")
+            if ts:
+                try:
+                    dt = datetime.datetime.fromisoformat(ts).date()
+                    iso_date = dt.isoformat()
+                    if iso_date in stats:
+                        stats[iso_date].append(entry)
+                except ValueError:
+                    continue
+                    
+        return stats

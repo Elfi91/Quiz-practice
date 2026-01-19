@@ -34,9 +34,10 @@ class QuizEngine:
             return ""
         # Lowercase and strip whitespace
         text = text.lower().strip()
-        # Strip trailing punctuation (.,!,?) but not internal punctuation
-        if text and text[-1] in string.punctuation:
-            text = text.rstrip(string.punctuation)
+        # Aggressively remove punctuation as requested user-side (especially . and !)
+        # treating them as noise rather than meaningful for these quizzes.
+        for char in ['.', '!', '?']:
+            text = text.replace(char, "")
         return text
 
     def run(self, offline_mode: bool = False, custom_questions: list = None, session_length: int = 15, silent_start: bool = False, level: str = "A1"):
@@ -145,7 +146,7 @@ class QuizEngine:
 
                     if user_answer.lower() in ['exit', 'quit']:
                         print("Goodbye!")
-                        return # Exit the entire run method
+                        break # Break input loop to reach save logic
                     
                     if not user_answer:
                         continue
