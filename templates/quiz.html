@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="quiz-header"
+    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; width: 100%;">
+    <span class="badge" style="background: #e2e8f0; padding: 6px 12px; border-radius: 20px; font-weight: 600;">
+        Question {{ index }} / {{ total }}
+    </span>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+        {% if end_timestamp %}
+        <div id="timer" class="timer-chip" data-end="{{ end_timestamp }}">
+            <span>⏳</span> <span id="time-display">--:--</span>
+        </div>
+        {% endif %}
+        <button type="button" onclick="togglePause()" class="btn-sm"
+            style="background:none; border:none; cursor:pointer; font-size: 1.2rem; padding: 4px;"
+            title="Pause">⏸️</button>
+        <a href="{{ url_for('index') }}" class="btn-sm" style="text-decoration:none; font-size: 1.2rem; padding: 4px;"
+            title="Exit" onclick="return confirm('Are you sure you want to exit? Progress will be lost.')">❌</a>
+    </div>
+</div>
+
+<div class="progress-container" style="width: 100%;">
+    <div class="progress-fill" style="width: {{ (index / total) * 100 }}%;"></div>
+</div>
+
+<form id="quiz-form" action="{{ url_for('submit_answer') }}" method="POST" style="width: 100%;">
+    <div class="question-text">
+        {{ display_question | safe }}
+    </div>
+
+    <div class="options-list">
+        {% if options %}
+        {% for opt in options %}
+        <label class="option-label">
+            <input type="radio" name="answer" value="{{ opt.id }}" required>
+            <span>{{ opt.text }}</span>
+        </label>
+        {% endfor %}
+        {% else %}
+        <p style="color: var(--text-light); margin-bottom: 12px; font-style: italic;">
+            Select your answer:
+        </p>
+        <!-- Fallback for unparsed questions -->
+        <div class="options-list">
+            <label class="option-label">
+                <input type="radio" name="answer" value="a" required> <span>Option A</span>
+            </label>
+            <label class="option-label">
+                <input type="radio" name="answer" value="b"> <span>Option B</span>
+            </label>
+            <label class="option-label">
+                <input type="radio" name="answer" value="c"> <span>Option C</span>
+            </label>
+            <label class="option-label">
+                <input type="radio" name="answer" value="d"> <span>Option D</span>
+            </label>
+        </div>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 32px;">
+        Submit Answer
+    </button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<div id="pause-overlay"
+    style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 100; flex-direction: column; justify-content: center; align-items: center;">
+    <h2>Quiz Paused ⏸️</h2>
+    <p>Take a break! The timer is stopped.</p>
+    <button onclick="togglePause()" class="btn btn-primary" style="margin-top: 1rem;">Resume Quiz ▶️</button>
+</div>
+
+<script>
+    let isPaused = false;
+    const overlay = document.getElementById('pause-overlay');
+    const mainContent = document.querySelector('main'); // Assuming questions are in main
+
+    function togglePause() {
+        isPaused = !isPaused;
+        if (isPaused) {
+            overlay.style.display = 'flex';
+            document.body.classList.add('paused');
+        } else {
+            overlay.style.display = 'none';
+            document.body.classList.remove('paused');
+        }
+
+        // Notify script.js to pause/resume the timer
+        if (window.toggleTimerPause) {
+            window.toggleTimerPause();
+        }
+    }
+</script>
+{% endblock %}

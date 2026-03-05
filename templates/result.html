@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card result-card">
+    <div class="score-card">
+        <h2>Quiz Complete! 🎉</h2>
+        <div class="score-display">{{ score }} / {{ total }}</div>
+
+        {% set percentage = (score / total * 100) if total > 0 else 0 %}
+        <div class="progress-container" style="margin: 20px auto; width: 60%;">
+            <div class="progress-fill"
+                style="width: {{ percentage }}%; background: {% if percentage >= 70 %}var(--success){% elif percentage >= 50 %}#f59e0b{% else %}var(--error){% endif %};">
+            </div>
+        </div>
+        <p>{{ percentage | round(1) }}% Correct</p>
+    </div>
+
+    {% if errors %}
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <form action="{{ url_for('start_quiz') }}" method="POST">
+            <input type="hidden" name="source" value="retry_current">
+            <input type="hidden" name="prev_session_id" value="{{ session.get('session_id') }}">
+            <button type="submit" class="btn" style="background: var(--error); color: white;">
+                ⚠️ Retry These {{ errors|length }} Mistakes
+            </button>
+        </form>
+    </div>
+
+    <h3 style="margin-bottom: 24px; border-top: 1px solid var(--border); padding-top: 24px;">Review Errors ({{
+        errors|length }})</h3>
+    <div class="errors-list">
+        {% for error in errors %}
+        <div class="error-item">
+            <div class="error-q">{{ error.question | safe }}</div>
+            <div class="error-meta">
+                <span class="wrong">❌ You: {{ error.user_answer }}</span>
+                <span class="correct">✅ Correct: {{ error.correct_answers | join(', ') }}</span>
+            </div>
+            {% if error.explanation %}
+            <div class="explanation">
+                <strong>Explanation:</strong><br>
+                {{ error.explanation | safe }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; margin: 40px 0;">
+        <h3>🏆 Perfect Score! Excellent work!</h3>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 40px; text-align: center;">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Menu 🏠</a>
+    </div>
+</div>
+{% endblock %}

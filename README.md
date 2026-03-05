@@ -1,117 +1,97 @@
-# 🇮🇹 Italian Tutor for German Speakers 🇩🇪
+# AWS Quiz Tutor & Quiz Engine
 
-A powerful CLI-based language learning tool powered by **Google Gemini AI**. This application helps German speakers learn Italian through interactive quizzes, offering bilingual explanations, smart repetition, and progress tracking.
+A versatile quiz application offering both a Command Line Interface (CLI) and a Web Interface (Flask) to practice and master technical topics. Currently configured with a comprehensive dataset for **AWS Cloud Practitioner** preparation, the engine is designed to be content-agnostic and can be extended to other subjects (e.g., Language Learning).
 
----
+## 🚀 Features
 
-## ✨ Key Features
+### Core Functionality
+- **Dual Interface**: Use the application via terminal (`main.py`) or a modern web browser (`app.py`).
+- **Flexible Quiz Modes**:
+  - **Standard Quiz**: Select specific problem sets or a random mix of all available questions.
+  - **Custom Session Length**: Choose standard (25, 50, 65) or custom number of questions.
+  - **Timed Mode**: Simulate exam conditions with a countdown timer (default 90 mins for full exams).
+- **Smart Error Tracking**:
+  - Automatically saves incorrect answers to `errori.json`.
+  - **Review Mode**: Dedicated mode to practice only previously missed questions.
+  - **Spaced Repetition**: Errors are removed from the review list only after they are answered correctly.
 
-### 🧠 1. AI-Powered Online Mode
--   **Infinite Content**: Uses Google Gemini to generate unique questions on the fly.
--   **Level Selection**: Choose your proficiency level from **A1 to C2**.
--   **Smart Batching**: efficient API usage with batched question generation.
--   **Bilingual Feedback**: Every answer comes with clear explanations in both Italian 🇮🇹 and German 🇩🇪.
+### Web-Specific Features
+- **Progress Dashboard**: Visual statistics of your study sessions over the last 7 days.
+- **Session History**: Tracks scores, completion times, and modes.
+- **Responsive Design**: Clean interface for studying on desktop or mobile.
 
-### 📚 2. Multi-Level Offline Mode
-No internet? No problem. Practice with hundreds of curated local questions categorized by CEFR levels:
--   **Flexible Practice**: Choose between **Random Questions** or **Specific Categories** (Coming Soon).
--   **Custom Lengths**: Choose session lengths of **15, 30, or 50** questions.
--   **Curated Levels**:
-    -   **A1.1 (Principiante 1)**: Introductions, numbers 0-100, colors, days, regular verbs.
-    -   **A1.2 (Principiante 2)**: Family, food, time, simple prepositions, verbs in -ere/-ire.
-    -   **A2.1 (Elementare 1)**: Passato prossimo, clothes, weather, direct pronouns.
-    -   **A2.2 (Elementare 2)**: Imperfetto, health, articulated prepositions, comparatives.
 
-### 🔄 3. Smart Review Mode (Personalized)
--   **Learn from Mistakes**: Every incorrect answer is saved to `errori.json`.
--   **Targeted Practice**: Select "Review Errors" to practice *only* what you got wrong.
--   **Smart Removal**: As soon as you answer a review question correctly, it is **automatically removed** from your list. Your list shrinks as you master the concepts!
--   **Silent Workflow**: Sessions start instantly without setup noise when practicing errors.
+## 🛠️ Installation
 
-### 📊 Statistics & Gamification
--   **Persistent Tracking**: All session results saved to `progress.json`.
--   **Gamification**: ASCII Art trophies for perfect scores and motivational messages.
--   **Visual Stats**: Percentage scores and a "Focus" section for mistakes in the final report.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
 
----
+2. **Set up a Virtual Environment** (Recommended)
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-## 🛠️ Tech Stack
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-This project demonstrates proficiency in:
--   **Core Language**: Python 3.12+ (Type Hinting, OOP)
--   **AI Integration**: Google Gemini API (`google-genai` SDK)
--   **Resilience**: `tenacity` library for robust API retry logic
--   **Data Management**: JSON-based local database for errors and progress tracking
--   **Environment**: `python-dotenv` for secure configuration
--   **CLI UX**: Dynamic progress bars, ASCII art, and interactive menus
+4. **Environment Variables**
+   Create a `.env` file in the root directory. While the core quiz doesn't strictly require it, it is recommended for future configurations.
+   ```bash
+   # Add environment variables here
+   ```
 
-## 🧹 Maintenance
+## 📖 Usage
 
-To keep your error logs clean (removing old API error messages or duplicates), use the included utility script:
-```bash
-python clean_data.py
-```
-This will scan `errori.json` and remove any corrupted entries.
+### Command Line Interface (CLI)
+The CLI provides a fast, distraction-free studying environment.
 
----
-
-## 🚀 Installation
-
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/your-username/learning-language-cli.git
-    cd learning-language-cli
-    ```
-
-2.  **Create a virtual environment**:
-    ```bash
-    python3 -m venv .venv
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    ```
-
-3.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Configure API Key**:
-    -   Create a `.env` file in the project root.
-    -   Add your Google Gemini API key:
-        ```bash
-        GEMINI_API_KEY=your_api_key_here
-        ```
-
----
-
-## 🎮 Usage
-
-Run the application:
 ```bash
 python main.py
 ```
+**Menu Options:**
+1. **Start Quiz**: Choose question sets and session parameters.
+2. **Review Errors**: Practice questions you've previously missed.
+3. **View Statistics**: See a summary of your recent performance.
 
-### Menu Options
-1.  **Online (AI Generated)**: 
-    -   Select difficulty (A1-C2).
-    -   Choose 10 or 20 questions.
-2.  **Offline (Local Questions)**: 
-    -   Select a curated level (A1.1 - A2.2).
-    -   Choose between Random or Category mode.
-    -   Select 15, 30, or 50 questions.
-3.  **Review Errors (Personalized)**: Practice your mistakes. If you have no errors, the system will congratulate you!
+### Web Interface
+The Web App offers a richer UI with detailed explanations and stats.
 
----
+```bash
+python app.py
+```
+- Open your browser and navigate to `http://127.0.0.1:8000`
+- **Home**: Start new quiz, choose modes.
+- **Quiz**: Interactive question interface with immediate feedback.
+- **Stats**: View weekly progress charts.
 
-## 📁 Project Structure
+## 📂 Project Structure
 
--   `main.py`: Entry point and menu logic.
--   `quiz_engine.py`: Core game loop, scoring, and UI logic.
--   `gemini_client.py`: Library for AI interactions.
--   `data_manager.py`: Handles saving/loading errors, stats, and local questions.
--   `data/`: Directory containing level-specific JSON files (read-only).
--   `errori.json`: Dynamic file storing your current mistakes.
--   `progress.json`: Dynamic file storing your session history.
+- **`main.py`**: Entry point for the CLI application.
+- **`app.py`**: Flask application for the Web Interface.
+- **`data_manager.py`**: Handles loading questions, saving errors, and tracking progress.
+- **`quiz_engine.py`**: Core logic for the CLI quiz loop.
+- **`data/`**: JSON files containing question banks (e.g., `quiz_1.json`).
+- **`templates/` & `static/`**: HTML and CSS files for the web interface.
 
-## 📄 License
+## 📝 Data Format
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Questions are stored in JSON format in the `data/` directory. Example structure:
+
+```json
+[
+    {
+        "id": 12345,
+        "question": "What is ...?",
+        "correct_answers": ["A", "Full Answer Text"],
+        "explanation": "Detailed explanation of why...",
+        "keywords": ["Topic", "Category"]
+    }
+]
+```
+

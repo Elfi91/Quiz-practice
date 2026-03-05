@@ -129,3 +129,22 @@ class DataManager:
                     continue
                     
         return stats
+
+    def get_errors_by_date(self, date_str: str) -> List[Dict[str, Any]]:
+        """
+        Returns a list of errors for a specific date (YYYY-MM-DD).
+        """
+        all_errors = self.load_errors()
+        filtered = []
+        
+        for err in all_errors:
+            ts = err.get("timestamp")
+            if ts:
+                try:
+                    dt = datetime.datetime.fromisoformat(ts).date()
+                    if dt.isoformat() == date_str:
+                        filtered.append(err)
+                except ValueError:
+                    continue
+        
+        return filtered

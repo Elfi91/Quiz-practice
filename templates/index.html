@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Start New Quiz</h2>
+<p class="subtitle">Customize your practice session</p>
+
+<form action="{{ url_for('start_quiz') }}" method="POST">
+
+    <!-- Question Set -->
+    <div class="form-section">
+        <span class="section-label">1. Select Question Source</span>
+        <div class="quiz-grid">
+            <!-- Mix Option -->
+            <label class="select-card span-full">
+                <input type="radio" name="source" value="all" checked>
+                <div class="select-card-content">
+                    <div class="icon">🔀</div>
+                    <span class="title">Mix All Questions</span>
+                    <span class="desc">Random selection from all available quizzes</span>
+                </div>
+            </label>
+
+            {% for i in range(1, 7) %}
+            <label class="select-card">
+                <input type="radio" name="source" value="{{ i }}">
+                <div class="select-card-content">
+                    <div class="icon">📚</div>
+                    <span class="title">Quiz {{ i }}</span>
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Count Selection -->
+    <div class="form-section">
+        <span class="section-label">2. Number of Questions</span>
+        <div class="options-row">
+            <label class="select-chip">
+                <input type="radio" name="count" value="25" checked>
+                <span class="chip-content">25 Questions</span>
+            </label>
+            <label class="select-chip">
+                <input type="radio" name="count" value="50">
+                <span class="chip-content">50 Questions</span>
+            </label>
+            <label class="select-chip">
+                <input type="radio" name="count" value="65">
+                <span class="chip-content">65 Questions</span>
+            </label>
+            <label class="select-chip">
+                <input type="radio" name="count" value="custom">
+                <span class="chip-content">Custom...</span>
+            </label>
+        </div>
+        <div id="custom-input-container" class="custom-input-wrapper">
+            <input type="number" name="custom_count" placeholder="Enter number of questions..." class="input-styled"
+                min="1">
+        </div>
+    </div>
+
+    <!-- Timer Selection -->
+    <div class="form-section">
+        <span class="section-label">3. Timer Settings</span>
+        <div class="options-row">
+            <label class="select-chip">
+                <input type="radio" name="timer" value="none" checked>
+                <span class="chip-content">♾️ No Timer</span>
+            </label>
+            <label class="select-chip">
+                <input type="radio" name="timer" value="auto">
+                <span class="chip-content">⏱️ Exam Timer (Auto)</span>
+            </label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn-submit">Start Quiz 🚀</button>
+</form>
+
+<div style="margin-top: 1.5rem; text-align: center;">
+    <a href="{{ url_for('stats') }}"
+        style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+        📊 View Weekly Statistics
+    </a>
+</div>
+
+<script>
+    // Toggle custom input
+    const countRadios = document.querySelectorAll('input[name="count"]');
+    const customContainer = document.getElementById('custom-input-container');
+    const customInput = customContainer.querySelector('input');
+
+    countRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                customContainer.classList.add('active');
+                customInput.focus();
+            } else {
+                customContainer.classList.remove('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

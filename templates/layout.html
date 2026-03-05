@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Quiz Tutor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="layout-box">
+            <header>
+                <div class="logo">
+                    <h1>☁️ AWS Quiz Tutor ☁️</h1>
+                </div>
+            </header>
+
+            <main>
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer>
+                <p>&copy; 2026 AWS Quiz Tutor</p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>
