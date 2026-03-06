@@ -15,3 +15,8 @@ typing-inspection
 typing_extensions
 urllib3
 flask
+flask
+gunicorn
+python-dotenv
+pydantic
+requests

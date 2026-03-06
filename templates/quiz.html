@@ -26,43 +26,103 @@
 </div>
 
 <form id="quiz-form" action="{{ url_for('submit_answer') }}" method="POST" style="width: 100%;">
-    <div class="question-text">
-        {{ display_question | safe }}
-    </div>
+    <!-- Fixed exactly-480px container that fills remaining space and scrolls -->
+    <div class="question-wrapper"
+        style="height: 480px; min-height: 480px; max-height: 480px; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;">
+        <div class="question-text" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 2rem; line-height: 1.5;">
+            {{ display_question | safe }}
+        </div>
 
-    <div class="options-list">
-        {% if options %}
-        {% for opt in options %}
-        <label class="option-label">
-            <input type="radio" name="answer" value="{{ opt.id }}" required>
-            <span>{{ opt.text }}</span>
-        </label>
-        {% endfor %}
-        {% else %}
-        <p style="color: var(--text-light); margin-bottom: 12px; font-style: italic;">
-            Select your answer:
-        </p>
-        <!-- Fallback for unparsed questions -->
         <div class="options-list">
+            {% set is_multiple = question.correct_answers|length > 1 %}
+            {% if options %}
+            {% for opt in options %}
             <label class="option-label">
-                <input type="radio" name="answer" value="a" required> <span>Option A</span>
+                <input type="{% if is_multiple %}checkbox{% else %}radio{% endif %}" name="answer" value="{{ opt.id }}"
+                    {% if user_answer and opt.id in user_answer %}checked{% endif %} {% if not is_multiple %}required{%
+                    endif %}>
+                <span>{{ opt.text }}</span>
             </label>
-            <label class="option-label">
-                <input type="radio" name="answer" value="b"> <span>Option B</span>
-            </label>
-            <label class="option-label">
-                <input type="radio" name="answer" value="c"> <span>Option C</span>
-            </label>
-            <label class="option-label">
-                <input type="radio" name="answer" value="d"> <span>Option D</span>
-            </label>
+            {% endfor %}
+            {% else %}
+            <p style="color: var(--text-light); margin-bottom: 12px; font-style: italic;">
+                Select your answer(s):
+            </p>
+            <div class="options-list">
+                <label class="option-label">
+                    <input type="{% if is_multiple %}checkbox{% else %}radio{% endif %}" name="answer" value="a" {% if
+                        user_answer and 'a' in user_answer %}checked{% endif %} {% if not is_multiple %}required{% endif
+                        %}>
+                    <span>Option A</span>
+                </label>
+                <label class="option-label">
+                    <input type="{% if is_multiple %}checkbox{% else %}radio{% endif %}" name="answer" value="b" {% if
+                        user_answer and 'b' in user_answer %}checked{% endif %}>
+                    <span>Option B</span>
+                </label>
+                <label class="option-label">
+                    <input type="{% if is_multiple %}checkbox{% else %}radio{% endif %}" name="answer" value="c" {% if
+                        user_answer and 'c' in user_answer %}checked{% endif %}>
+                    <span>Option C</span>
+                </label>
+                <label class="option-label">
+                    <input type="{% if is_multiple %}checkbox{% else %}radio{% endif %}" name="answer" value="d" {% if
+                        user_answer and 'd' in user_answer %}checked{% endif %}>
+                    <span>Option D</span>
+                </label>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if check_result %}
+        <div class="check-result-box"
+            style="margin-top: 20px; padding: 15px; border-radius: 8px; background-color: {% if check_result.is_correct %}#d1fae5{% else %}#fee2e2{% endif %}; border: 1px solid {% if check_result.is_correct %}#10b981{% else %}#ef4444{% endif %};">
+            <h4
+                style="color: {% if check_result.is_correct %}#047857{% else %}#b91c1c{% endif %}; margin-top: 0; margin-bottom: 10px;">
+                {% if check_result.is_correct %}Correct! 🎉{% else %}Incorrect. ❌{% endif %}
+            </h4>
+            {% if not check_result.is_correct %}
+            <p style="margin-bottom: 8px; color: #7f1d1d;"><strong>Correct Answer:</strong> {{
+                check_result.correct_answers
+                | join(', ') }}</p>
+            {% endif %}
+            {% if check_result.explanation %}
+            <p
+                style="margin-bottom: 0; font-size: 0.9em; color: {% if check_result.is_correct %}#065f46{% else %}#7f1d1d{% endif %};">
+                <strong>Explanation:</strong> {{ check_result.explanation }}
+            </p>
+            {% endif %}
         </div>
         {% endif %}
     </div>
 
-    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 32px;">
-        Submit Answer
-    </button>
+    <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+        {% if index > 1 %}
+        <button type="submit" name="action" value="prev" class="btn btn-secondary"
+            style="flex: 1; min-width: 120px; background-color: #94a3b8; border-color: #94a3b8; color: white;"
+            formnovalidate>
+            &laquo; Previous
+        </button>
+        {% else %}
+        <div style="flex: 1; min-width: 120px;"></div>
+        {% endif %}
+
+        <button type="submit" name="action" value="check" class="btn btn-warning"
+            style="flex: 1; min-width: 120px; background-color: #f59e0b; border-color: #f59e0b; color: white;">
+            Check
+        </button>
+
+        {% if index < total %} <button type="submit" name="action" value="next" class="btn btn-primary"
+            style="flex: 1; min-width: 120px;">
+            Next &raquo;
+            </button>
+            {% else %}
+            <button type="submit" name="action" value="finish" class="btn btn-success"
+                style="flex: 1; min-width: 120px; background-color: #10b981; border-color: #10b981; color: white;">
+                Finish Quiz &#10003;
+            </button>
+            {% endif %}
+    </div>
 </form>
 {% endblock %}
 

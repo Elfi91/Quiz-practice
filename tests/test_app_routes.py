@@ -29,7 +29,7 @@ class QuizAppTestCase(unittest.TestCase):
         # Should redirect to /quiz, which renders quiz.html
         self.assertEqual(result.status_code, 200)
         self.assertIn(b'Question 1 / 25', result.data)
-        self.assertIn(b'Submit Answer', result.data)
+        self.assertIn(b'Next', result.data)
 
     def test_submit_answer(self):
         # Create a mock session
@@ -51,10 +51,10 @@ class QuizAppTestCase(unittest.TestCase):
         with self.app.session_transaction() as sess:
             sess['session_id'] = sid
         
-        # Submit answer
-        result = self.app.post('/submit', data={'answer': 'a'}, follow_redirects=True)
+        # Submit answer and finish
+        result = self.app.post('/submit', data={'answer': 'a', 'action': 'finish'}, follow_redirects=True)
         
-        # After answering last question, should redirect to result
+        # After finishing, should redirect to result
         self.assertEqual(result.status_code, 200)
         self.assertIn(b'Quiz Complete', result.data)
 

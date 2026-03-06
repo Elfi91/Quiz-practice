@@ -128,7 +128,8 @@ def start_quiz():
         'errors': [],
         'start_time': time.time(),
         'end_timestamp': end_timestamp,
-        'time_limit_minutes': time_limit
+        'time_limit_minutes': time_limit,
+        'user_answers': {}
     }
 
     return redirect(url_for('quiz'))
@@ -168,13 +169,21 @@ def quiz():
     if not options:
         display_question = text_content
     
+    check_result = quiz_data.pop('last_check_result', None)
+    
+    user_answers = quiz_data.get('user_answers', {}).get(str(idx), [])
+    if isinstance(user_answers, str):
+        user_answers = [user_answers]
+        
     return render_template('quiz.html', 
                            question=question, 
                            display_question=display_question,
                            options=options,
                            index=idx + 1, 
                            total=total,
-                           end_timestamp=quiz_data.get('end_timestamp'))
+                           end_timestamp=quiz_data.get('end_timestamp'),
+                           user_answer=user_answers,
+                           check_result=check_result)
 
 @app.route('/submit', methods=['POST'])
 def submit_answer():
@@ -189,35 +198,98 @@ def submit_answer():
     if idx >= len(questions):
         return redirect(url_for('result'))
 
-    user_answer = request.form.get('answer', '').strip()
-    current_q = questions[idx]
+    action = request.form.get('action')
+    user_answer_list = request.form.getlist('answer')
+    # filter out empty strings
+    user_answer_list = [ans.strip() for ans in user_answer_list if ans.strip()]
     
-    raw_correct = current_q.get("correct_answers", [])
-    normalized_correct = [normalize_text(ans) for ans in raw_correct]
-    cleaned_user = normalize_text(user_answer)
-    
-    is_correct = cleaned_user in normalized_correct
-    if len(cleaned_user) == 1 and cleaned_user.isalpha():
-        is_correct = any(a.lower() == cleaned_user for a in raw_correct)
+    # Save the current answer if provided
+    if user_answer_list:
+        if 'user_answers' not in quiz_data:
+            quiz_data['user_answers'] = {}
+        quiz_data['user_answers'][str(idx)] = user_answer_list
 
-    if is_correct:
-        quiz_data['score'] += 1
-        data_manager.remove_error(current_q.get('question'))
-    else:
-        error_entry = {
-            "question": current_q.get('question'),
-            "user_answer": user_answer,
-            "correct_answers": raw_correct,
-            "explanation": current_q.get('explanation'),
-            "keywords": current_q.get('keywords', [])
-        }
-        quiz_data['errors'].append(error_entry)
+    # Navigation logic
+    if action == 'prev':
+        quiz_data['current_index'] = max(0, idx - 1)
+        return redirect(url_for('quiz'))
+    elif action == 'next':
+        quiz_data['current_index'] = min(len(questions) - 1, idx + 1)
+        return redirect(url_for('quiz'))
+    elif action == 'check':
+        current_q = questions[idx]
+        raw_correct = current_q.get("correct_answers", [])
+        normalized_correct = [normalize_text(ans) for ans in raw_correct]
+        cleaned_user_list = [normalize_text(ans) for ans in user_answer_list]
         
-        error_entry_save = error_entry.copy()
-        error_entry_save['timestamp'] = datetime.datetime.now().isoformat()
-        data_manager.save_error(error_entry_save)
+        is_correct = False
+        if len(cleaned_user_list) > 0:
+            # Check if user submitted letters and correct answers are letters
+            user_letters = set(ans for ans in cleaned_user_list if len(ans) == 1 and ans.isalpha())
+            correct_letters = set(ans.lower() for ans in raw_correct if len(ans) <= 2) # e.g. "a" or "a)"
+            # also extract letters from normalized_correct if they are single letters
+            correct_letters.update(ans for ans in normalized_correct if len(ans) == 1 and ans.isalpha())
+            
+            if len(user_letters) == len(cleaned_user_list) and len(raw_correct) > 0:
+                # User provided only letter answers (like ['a', 'c'])
+                is_correct = user_letters == correct_letters
+            else:
+                is_correct = set(cleaned_user_list) == set(normalized_correct)
 
-    quiz_data['current_index'] += 1
+        quiz_data['last_check_result'] = {
+            'is_correct': is_correct,
+            'correct_answers': raw_correct,
+            'explanation': current_q.get('explanation')
+        }
+        return redirect(url_for('quiz'))
+    elif action == 'finish':
+        quiz_data['score'] = 0
+        quiz_data['errors'] = []
+        user_answers = quiz_data.get('user_answers', {})
+        
+        for i, q in enumerate(questions):
+            ans_list = user_answers.get(str(i), [])
+            if isinstance(ans_list, str):
+                ans_list = [ans_list]
+            ans_list = [ans.strip() for ans in ans_list if ans.strip()]
+            
+            raw_correct = q.get("correct_answers", [])
+            normalized_correct = [normalize_text(c) for c in raw_correct]
+            cleaned_user_list = [normalize_text(ans) for ans in ans_list]
+            
+            is_correct = False
+            if len(cleaned_user_list) > 0:
+                user_letters = set(ans for ans in cleaned_user_list if len(ans) == 1 and ans.isalpha())
+                correct_letters = set(ans.lower() for ans in raw_correct if len(ans) <= 2)
+                correct_letters.update(ans for ans in normalized_correct if len(ans) == 1 and ans.isalpha())
+                if len(user_letters) == len(cleaned_user_list) and len(raw_correct) > 0:
+                    is_correct = user_letters == correct_letters
+                else:
+                    is_correct = set(cleaned_user_list) == set(normalized_correct)
+                
+            if is_correct:
+                quiz_data['score'] += 1
+                data_manager.remove_error(q.get('question'))
+            else:
+                error_entry = {
+                    "question": q.get('question'),
+                    "user_answer": ", ".join(ans_list),
+                    "correct_answers": raw_correct,
+                    "explanation": q.get('explanation'),
+                    "keywords": q.get('keywords', [])
+                }
+                quiz_data['errors'].append(error_entry)
+                
+                error_entry_save = error_entry.copy()
+                error_entry_save['timestamp'] = datetime.datetime.now().isoformat()
+                data_manager.save_error(error_entry_save)
+        
+        quiz_data['current_index'] = len(questions)
+        return redirect(url_for('result'))
+    
+    # Fallback (e.g. submit without JS button)
+    if idx < len(questions) - 1:
+        quiz_data['current_index'] += 1
     return redirect(url_for('quiz'))
 
 @app.route('/result')
