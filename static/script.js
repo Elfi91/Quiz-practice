@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const minutes = Math.floor(diff / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             displayEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
